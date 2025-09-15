@@ -40,6 +40,8 @@ export function BankAccountsList() {
     }
   }
 
+  // Create a new bank account
+  const [createLoading, setCreateLoading] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -49,6 +51,7 @@ export function BankAccountsList() {
     }
 
     try {
+      setCreateLoading(true)
       await api.createBankAccount({
         name: formData.name,
         routingNumber: formData.routingNumber,
@@ -70,6 +73,8 @@ export function BankAccountsList() {
     } catch (error) {
       console.error('Error creating bank account:', error)
       toast.error('Failed to create bank account')
+    } finally{
+      setCreateLoading(false)
     }
   }
 
@@ -110,6 +115,25 @@ export function BankAccountsList() {
       toast.error('Failed to delete bank account')
     }finally{
       setDeleteItem(null)
+    }
+  }
+
+  // handle update bank account 
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false)
+  const handleUpdate = async (account: BankAccount) => {
+    if(!account) toast.error('Bank account not found')
+    try {
+      setUpdateLoading(true)
+      console.log(formData)
+      await api.updateBankAccount(account.id, formData)
+      toast.success('Bank account updated successfully')
+      loadAccounts()
+      resetForm()
+    } catch (error) {
+      console.error('Error updating bank account:', error)
+      toast.error('Failed to update bank account')
+    } finally{
+        setUpdateLoading(false)
     }
   }
 
@@ -191,9 +215,19 @@ export function BankAccountsList() {
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                  {editingAccount ? 'Update' : 'Create'} Account
-                </Button>
+                {
+                  editingAccount ? (
+                    <Button type="button" disabled={updateLoading} className={`${updateLoading ? 'cursor-not-allowed bg-emerald-400 hover:bg-emerald-400':'bg-emerald-600 hover:bg-emerald-700'} `} onClick={() => handleUpdate(editingAccount)}>
+                      {updateLoading ? "Updating..." : "Update" }
+                    </Button>
+                  ):
+                  (
+                    <Button disabled={createLoading} type="submit" className={`${createLoading ? 'cursor-not-allowed bg-emerald-400 hover:bg-emerald-400':'bg-emerald-600 hover:bg-emerald-700'} `} >
+                      {createLoading ? "Creating..." :"Create Account"}
+                    </Button>
+                  )
+                }
+                 
               </div>
             </form>
           </DialogContent>

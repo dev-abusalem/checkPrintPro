@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local"
 import ClientLayoutProviders from "./ClientLayoutProviders";
-const micrenFont = localFont({
+ const micrenFont = localFont({
   src: "./fonts/micrenc.ttf",
   variable: "--font-micrenc",
   display: "swap",
@@ -34,11 +34,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${micrenFont.variable} antialiased`}
       >
-        <ClientLayoutProviders>
+         <ClientLayoutProviders>
           {children}
         </ClientLayoutProviders>
-        
-      </body>
+       </body>
     </html>
   );
 }

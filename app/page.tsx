@@ -37,7 +37,7 @@ function AppContent() {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard onNewCheck={handleNewCheck} />
+        return <Dashboard onNewCheck={handleNewCheck} setActiveSection={setActiveSection} />
       case 'new-check':
         return <NewCheckPage onBack={handleBackToChecks} />
       case 'all-checks':

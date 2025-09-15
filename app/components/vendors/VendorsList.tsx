@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Edit, Trash2, Users, Search } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Search, Loader2 } from 'lucide-react'
 import { api, type Vendor } from '../../utils/api'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,8 @@ export function VendorsList() {
       setLoading(false)
     }
   }
-
+  // Create a new vendor
+  const [createLoading, setCreateLoading] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -49,6 +50,7 @@ export function VendorsList() {
     }
 
     try {
+      setCreateLoading(true)
       await api.createVendor({
         name: formData.name,
         address: formData.address,
@@ -68,6 +70,8 @@ export function VendorsList() {
     } catch (error) {
       console.error('Error creating vendor:', error)
       toast.error('Failed to create vendor')
+    } finally{
+      setCreateLoading(false)
     }
   }
 
@@ -97,6 +101,42 @@ export function VendorsList() {
     vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     vendor.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+
+
+    // handle delete
+    const [deleteItem, setDeleteItem] = useState<Vendor | null>(null)
+    const handleDelete = async (account: Vendor) => {
+      try {
+        setDeleteItem(account)
+        await api.deleteVendor(account.id)
+        toast.success('Vendor deleted successfully')
+        loadVendors()
+      } catch (error) {
+        console.error('Error deleting vendor:', error)
+        toast.error('Failed to delete vendor')
+      }finally{
+        setDeleteItem(null)
+      }
+    }
+  
+    // handle update vendor 
+    const [updateLoading, setUpdateLoading] = useState<boolean>(false)
+    const handleUpdate = async (account: Vendor) => {
+      if(!account) toast.error('Vendor not found')
+      try {
+        setUpdateLoading(true)
+        await api.updateVendor(account.id, formData)
+        toast.success('Vendor updated successfully')
+        loadVendors()
+        resetForm()
+      } catch (error) {
+        console.error('Error updating vendor:', error)
+        toast.error('Failed to update vendor')
+      } finally{
+          setUpdateLoading(false)
+      }
+    }
 
   return (
     <div className="space-y-6">
@@ -163,9 +203,18 @@ export function VendorsList() {
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                  {editingVendor ? 'Update' : 'Create'} Vendor
-                </Button>
+                {
+                  editingVendor ? (
+                    <Button type="button" disabled={updateLoading} className={`${updateLoading ? 'cursor-not-allowed bg-emerald-400 hover:bg-emerald-400':'bg-emerald-600 hover:bg-emerald-700'} `} onClick={() => handleUpdate(editingVendor)}>
+                       {updateLoading ? "Updating..." : "Update" }
+                    </Button>
+                      ):
+                      (
+                        <Button disabled={createLoading} type="submit" className={`${createLoading ? 'cursor-not-allowed bg-emerald-400 hover:bg-emerald-400':'bg-emerald-600 hover:bg-emerald-700'} `} >
+                          {createLoading ? "Creating..." :"Create Vendor"}
+                        </Button>
+                      )
+                } 
               </div>
             </form>
           </DialogContent>
@@ -260,10 +309,18 @@ export function VendorsList() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="text-red-600 hover:text-red-700"
+                          className={`${deleteItem && deleteItem.id === vendor.id ? 'cursor-not-allowed text-red-200 hover:text-red-200' : 'text-red-600 hover:text-red-700'} `}
+                          disabled={deleteItem && deleteItem.id === vendor.id ? true :false}
+                          onClick={() => handleDelete(vendor)}
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                          {
+                            deleteItem && deleteItem.id === vendor.id ? (
+                              <Loader2 className="animate-spin h-3 w-3" />
+                            ) : (
+                              <Trash2 className="h-3 w-3" />
+                            )
+                          }
+                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>

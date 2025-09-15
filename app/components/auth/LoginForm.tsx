@@ -34,7 +34,7 @@ export function LoginForm() {
         toast.success('Successfully signed in')
       }
     } catch (error : any) {
-      if (error.message?.includes('Email not confirmed')) {
+      if (error?.message?.includes('Email not confirmed')) {
         toast.error('Please check your email and confirm your account before signing in')
       } else if (error.message?.includes('User already registered')) {
         toast.error('An account with this email already exists. Please sign in instead.')

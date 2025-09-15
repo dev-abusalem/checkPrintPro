@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,9 +19,10 @@ import { toast } from 'sonner'
 
 interface DashboardProps {
   onNewCheck?: () => void
+  setActiveSection: React.Dispatch<React.SetStateAction<string>>
 }
 
-export function Dashboard({ onNewCheck }: DashboardProps) {
+export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
   const [checks, setChecks] = useState<Check[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -176,7 +178,7 @@ export function Dashboard({ onNewCheck }: DashboardProps) {
               </div>
             )}
             <div className="mt-4">
-              <Button variant="outline" className="w-full">
+              <Button onClick={()=>setActiveSection('all-checks')} variant="outline" className="w-full">
                 <Eye className="h-4 w-4 mr-2" />
                 View All Checks
               </Button>

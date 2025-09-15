@@ -17,7 +17,7 @@ class ApiClient {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Network error' }))
+      const error = await response.json().catch((e) => ({ error: `Network error : ${e}` }))
       throw new Error(error.error || `HTTP ${response.status}`)
     }
 
@@ -84,6 +84,19 @@ class ApiClient {
   async createVendor(vendorData: any) {
     return this.request('/vendors', {
       method: 'POST',
+      body: JSON.stringify(vendorData),
+    })
+  }
+
+  async deleteVendor(id: string) {
+    return this.request(`/vendors/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async updateVendor(id: string, vendorData: any) {
+    return this.request(`/vendors/${id}`, {
+      method: 'PUT',
       body: JSON.stringify(vendorData),
     })
   }

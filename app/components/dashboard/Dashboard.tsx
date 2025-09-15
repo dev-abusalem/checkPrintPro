@@ -197,15 +197,15 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
                 <Plus className="h-6 w-6 mb-2" />
                 New Check
               </Button>
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('all-checks')}>
                 <FileText className="h-6 w-6 mb-2" />
                 All Checks
               </Button>
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('accounts')}>
                 <Building2 className="h-6 w-6 mb-2" />
                 Bank Accounts
               </Button>
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('vendors')}>
                 <Users className="h-6 w-6 mb-2" />
                 Vendors
               </Button>

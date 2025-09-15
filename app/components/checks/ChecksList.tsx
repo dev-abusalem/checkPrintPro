@@ -273,13 +273,13 @@ const ViewDetails = ({
 
   return(
     <>
-      <h1 className='text-2xl font-semibold text-black text-center underline'>Details view of a check</h1>
+      <h1 className='text-2xl font-semibold text-black text-center underline'>Details of a check</h1>
       <div className="space-y-1 mt-4">
           <Item label="Check No" value={data.checkNo} />
           <Item label="Date" value={data.date} />
           <Item label="Payee" value={data.payee} />
           <Item label="Memo" value={data.memo} />
-          <Item label="Amount" value={`$${data.amount.toLocaleString()}`} />
+          <Item label="Amount (Cents)" value={`$${data.amount}`} />
           <Item label="Amount (words)" value={data.amountWords} />
           <Item label="Status" value={data.status} />
           <Item label="Bank Account" value={data.bankAccount} />

@@ -13,8 +13,7 @@ interface AppModalProps{
 }
 const AppModal = ({ children, component}:AppModalProps) => {
   return (
-    <>
-    <Dialog>
+     <Dialog>
   <DialogTrigger className='w-full'>{children}</DialogTrigger>
   <DialogContent>
     <DialogHeader>
@@ -23,8 +22,7 @@ const AppModal = ({ children, component}:AppModalProps) => {
     </DialogHeader>
   </DialogContent>
 </Dialog>
-    </>
-  )
+   )
 }
 
 export default AppModal

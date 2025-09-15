@@ -13,7 +13,8 @@ import {
   Trash2, 
   Printer, 
   MoreHorizontal,
-  Plus
+  Plus,
+  CircleOff
 } from 'lucide-react'
 import { formatCurrency, getStatusColor, formatCheckNumber } from '../../lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -78,14 +79,20 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
     }
   }
 
+  // handle delete check
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const handleDelete = async (checkId: string) => {
+    if(!checkId) return toast.error('Check not found')
     try {
+      setDeleteLoading(true)
       await api.deleteCheck(checkId)
       toast.success('Check deleted')
       loadChecks()
     } catch (error) {
       console.error('Error deleting check:', error)
       toast.error('Failed to delete check')
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -194,8 +201,7 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
                       <TableCell className="max-w-32 truncate">{check.memo || '—'}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-1">
-                          {getActionButtons(check)}
-                          <DropdownMenu >
+                           <DropdownMenu >
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm">
                                 <MoreHorizontal className="h-3 w-3" />
@@ -210,19 +216,23 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
                                   </div>
                                </AppModal>
                               {check.status !== 'void' && (
-                                <DropdownMenuItem onClick={() => handleVoid(check.id)} className="text-red-600">
-                                  <Trash2 className="h-4 w-4 mr-2" />
+                                <DropdownMenuItem onClick={() => handleVoid(check.id)}  >
+                                  <CircleOff className="h-4 w-4 mr-2" />
                                   Void
                                 </DropdownMenuItem>
                               )}
-                              <AppModal component={<AppDeleteModal text='Are you sure you want to delete this check ?' onClick={()=>handleDelete(check.id)} />}>
-                                  <div className='flex justify-start items-center gap-2 text-sm hover:text-red-600 px-2 py-1.5 rounded-md hover:bg-gray-100 w-full '>
+                               {check.status === 'created' && (
+                                <DropdownMenuItem onClick={() => handlePrint(check.id)}  >
+                                  <Printer className="h-4 w-4 mr-2" />
+                                  Print
+                                </DropdownMenuItem>
+                              )}
+                               <AppDeleteModal loading={deleteLoading} text='Are you sure you want to delete this check ?' onClick={()=>handleDelete(check.id)} >
+                                  <div className='flex justify-start items-center gap-2 text-sm  px-2 py-1.5 rounded-md hover:bg-gray-100 w-full '>
                                       <Trash2 className="h-4 w-4 mr-2 text-gray-500" />
                                       <span>Delete</span>
                                   </div>
-                               </AppModal>
-                              
-                              
+                               </AppDeleteModal>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>

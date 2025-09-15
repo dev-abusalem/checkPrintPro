@@ -11,7 +11,8 @@ import {
   Plus,
   Eye,
   Building2,
-  Users
+  Users,
+  CircleOff
 } from 'lucide-react'
 import { formatCurrency, getStatusColor, formatCheckNumber } from '../../lib/utils'
 import { api, type Check } from '../../utils/api'
@@ -121,7 +122,7 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm">Void Checks</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CircleOff className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{stats.voidChecks}</div>

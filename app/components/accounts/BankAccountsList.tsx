@@ -104,6 +104,7 @@ export function BankAccountsList() {
 
   // handle delete
   const [deleteItem, setDeleteItem] = useState<BankAccount | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const handleDelete = async (account: BankAccount) => {
     try {
       setDeleteItem(account)

@@ -116,7 +116,12 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
-
+@font-face {
+  font-family: 'micrenc';
+  src: url('/fonts/micrenc.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;

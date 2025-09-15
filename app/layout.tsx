@@ -4,7 +4,7 @@ import "./globals.css";
 import localFont from "next/font/local"
 import ClientLayoutProviders from "./ClientLayoutProviders";
  const micrenFont = localFont({
-  src: "./fonts/micrenc.ttf",
+  src: "../public/fonts/micrenc.ttf",
   variable: "--font-micrenc",
   display: "swap",
 })

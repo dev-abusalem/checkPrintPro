@@ -35,39 +35,8 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
   const [checkPosition, setCheckPosition] = useState<'top' | 'middle' | 'bottom'>('top')
   const [showGrid, setShowGrid] = useState(false)
  // handle print 
-  const contentRef = useRef<HTMLDivElement>(null)
-  const reactToPrintFn = useReactToPrint({
-  contentRef,
-   
-  pageStyle: `
-    @page {
-      size: 8.5in 3.5in;
-      margin: 0;
-    }
-    @media print {
-      body { margin: 0; }
-      .print-check-only {
-        width: 8.5in !important;
-        height: 3.5in !important;
-        padding: 0.25in !important;
-        box-sizing: border-box;
-        background: white;
-      }
-      .font-micrenc-font {
-        font-family: 'micrenc', monospace !important;
-        font-weight: normal !important;
-        font-style: normal !important;
-        color: #000000 !important;
-        font-size: 24px !important;
-        line-height: 1.2 !important;
-        letter-spacing: 0.15em !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-    }
-  `,
-});
-
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   useEffect(() => {
     loadData()
@@ -179,7 +148,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
       })
       
       // Trigger print
-      reactToPrintFn()
+      window.print()
       
       toast.success('Check printed successfully')
       onBack()
@@ -294,7 +263,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
               value={formData.date}
               type='date'
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full h-8 border-0 border-b border-gray-600 rounded-none bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+              className="w-full h-8 border-0 border-b-2 border-gray-600 rounded-none bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
             />
           </div>
       </div>
@@ -338,7 +307,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
               <p className='font-bruno-ace-font w-20 text-left'>Dollar</p>
               </div>
             ) : (
-              <div className="text-lg flex items-center border-b w-full px-4 border-gray-600 font-times-new-roman  min-h-[36px] text-gray-700 italic leading-tight justify-center">
+              <div className="text-lg flex items-center border-b-2 w-full px-4 border-gray-600 font-times-new-roman  min-h-[36px] text-gray-700 italic leading-tight justify-center">
                 <span>Amount in words will appear here</span>
               </div>
             )}
@@ -370,19 +339,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
               }}
               onEnded={handleSignatureEnd}
             />
-            {/* {
-              signatureRef.current && <div className="absolute top-0 right-0 flex gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-6 w-6 p-0 bg-transparent"
-                onClick={clearSignature}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-            } */}
+           
           </div>
         </div>
       </div>
@@ -482,11 +439,14 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
             <Save className="h-4 w-4 mr-2" />
             Save Draft
           </Button>
-          <Button onClick={handlePrint} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+          {/* <Button onClick={handlePrint} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+            <Printer className="h-4 w-4 mr-2" />
+            Print Check
+          </Button> */}
+          <Button onClick={reactToPrintFn} className="bg-emerald-600 hover:bg-emerald-700">
             <Printer className="h-4 w-4 mr-2" />
             Print Check
           </Button>
-           
         </div>
       </div>
 

@@ -389,7 +389,7 @@ export default function  NewCheckPage() {
           <Button 
             variant="outline" 
             onClick={() => setShowGrid(!showGrid)}
-            className={showGrid ? "bg-red-50 border-red-200" : ""}
+            className={showGrid ? "bg-red-50 border-red-200 cursor-pointer" : "cursor-pointer"}
           >
             <Grid3x3 className="h-4 w-4 mr-2" />
             {showGrid ? 'Hide Grid' : 'Show Grid'}
@@ -397,16 +397,16 @@ export default function  NewCheckPage() {
           <Button 
             variant="outline" 
             onClick={() => setPrintPreview(!printPreview)}
-            className={printPreview ? "bg-blue-50 border-blue-200" : ""}
+            className={printPreview ? "bg-blue-50 border-blue-200 cursor-pointer" : "cursor-pointer"}
           >
             <Eye className="h-4 w-4 mr-2" />
             {printPreview ? 'Exit Preview' : 'Print Preview'}
           </Button>
-          <Button  variant="outline" onClick={handleSave} disabled={isPending}>
+          <Button  variant="outline" onClick={handleSave} disabled={isPending} className='cursor-pointer'>
             <Save className="h-4 w-4 mr-2" />
             Save Draft
           </Button>
-          <Button onClick={handlePrint} disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handlePrint} disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
             <Printer className="h-4 w-4 mr-2" />
             Print Check
           </Button>

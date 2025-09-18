@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print';
-import { CheckFormDataProps } from '../checks/new-check/NewCheckPage';
 import { convertToWords } from '@/lib/utils';
 import Signature from "@uiw/react-signature"
+import { CheckInput } from '../checks/types/check.types';
 interface PrintCheckProps {
-    formData: CheckFormDataProps
+    formData: CheckInput
     selectedAccount:any 
     amountCents: number
 }

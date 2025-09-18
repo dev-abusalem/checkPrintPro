@@ -52,7 +52,7 @@ export function Dashboard( ) {
           <h1>Dashboard</h1>
           <p className="text-muted-foreground">Overview of your check printing activity</p>
         </div>
-        <Button onClick={() => router.push("/new-check")} className="bg-emerald-600 hover:bg-emerald-700" >
+        <Button onClick={() => router.push("/new-check")} className="bg-emerald-600 cursor-pointer hover:bg-emerald-700" >
           <Plus className="h-4 w-4 mr-2" />
           New Check
         </Button>

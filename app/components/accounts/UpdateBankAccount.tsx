@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { toast } from "sonner"
-import { BankAccountInput, bankAccountInputSchema, BankAccountResponse } from "./types/bank-account-types"
+import { BankAccountInput, bankAccountInputSchema, BankAccount } from "./types/bank-account-types"
 import { useUpdateBankAccount } from "@/app/services/hooks/useBankAccount"
 
 
 interface UpdateBankAccountProps {
-  account: BankAccountResponse | null
+  account: BankAccount | null
   isOpen: boolean
   onClose: () => void
 }

@@ -66,7 +66,7 @@ export function Dashboard( ) {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl">{stats.checksThisMonth}</div>
+            <div className="text-2xl">{isPending ? "Loading..." : stats.checksThisMonth}</div>
             <p className="text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3 inline mr-1" />
               +12% from last month
@@ -80,7 +80,7 @@ export function Dashboard( ) {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl">{stats.printedChecks}</div>
+            <div className="text-2xl">{isPending ? "Loading..." :stats.printedChecks}</div>
             <p className="text-xs text-muted-foreground">
               Total printed
             </p>
@@ -93,7 +93,7 @@ export function Dashboard( ) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl">{formatCurrency(stats?.totalAmount!)}</div>
+            <div className="text-2xl">{isPending ? "Loading..." : formatCurrency(stats?.totalAmount!)}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -106,7 +106,7 @@ export function Dashboard( ) {
             <CircleOff className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl">{stats.voidChecks}</div>
+            <div className="text-2xl">{isPending ? "Loading..." : stats.voidChecks}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>

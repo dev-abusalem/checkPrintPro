@@ -20,7 +20,6 @@ import {
 } from 'lucide-react'
 import { formatCurrency, getStatusColor, formatCheckNumber } from '../../../lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { api  } from '../../../utils/api'
 import { toast } from 'sonner'
 import AppModal from '@/app/shared/AppModal'
 import AppDeleteModal from '@/app/shared/AppDeleteModal'

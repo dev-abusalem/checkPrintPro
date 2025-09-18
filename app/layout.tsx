@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local"
 import ClientLayoutProviders from "./ClientLayoutProviders";
+import { Toaster } from "@/components/ui/sonner";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
  const micrenFont = localFont({
   src: "../public/fonts/micrenc.ttf",
   variable: "--font-micrenc",
@@ -36,7 +38,9 @@ export default function RootLayout({
       >
          <ClientLayoutProviders>
           {children}
+          <ReactQueryDevtools initialIsOpen={false} />
         </ClientLayoutProviders>
+        <Toaster richColors   />
        </body>
     </html>
   );

@@ -15,53 +15,34 @@ import {
   CircleOff
 } from 'lucide-react'
 import { formatCurrency, getStatusColor, formatCheckNumber } from '../../lib/utils'
-import { api, type Check } from '../../utils/api'
-import { toast } from 'sonner'
+import LoadingState from '@/app/shared/LoadingState'
+import { useGetChecks } from '@/app/services/hooks/useCheck'
+import { useRouter } from 'next/navigation'
+ 
+ 
 
-interface DashboardProps {
-  onNewCheck?: () => void
-  setActiveSection: React.Dispatch<React.SetStateAction<string>>
-}
-
-export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
-  const [checks, setChecks] = useState<Check[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadChecks()
-  }, [])
-
-  const loadChecks = async () => {
-    try {
-      const response = await api.getChecks()
-      setChecks(response.checks || [])
-    } catch (error) {
-      console.error('Error loading checks:', error)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Calculate stats from real data
+export function Dashboard( ) {
+  const {data:checks, isPending} = useGetChecks()
+  const router = useRouter()
+   // Calculate stats from real data
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
   
-  const thisMonthChecks = checks.filter(check => {
-    const checkDate = new Date(check.date)
-    return checkDate.getMonth() === currentMonth && checkDate.getFullYear() === currentYear
+  const thisMonthChecks = checks?.filter(check => {
+    const checkDate = new Date(check?.date)
+    return checkDate?.getMonth() === currentMonth && checkDate?.getFullYear() === currentYear
   })
 
   const stats = {
-    checksThisMonth: thisMonthChecks.length,
-    totalAmount: thisMonthChecks.reduce((sum, check) => sum + check.amount, 0),
-    voidChecks: checks.filter(check => check.status === 'void').length,
-    printedChecks: checks.filter(check => check.status === 'printed').length
+    checksThisMonth: thisMonthChecks?.length,
+    totalAmount: thisMonthChecks?.reduce((sum, check) => sum + check.amount, 0),
+    voidChecks: checks?.filter(check => check?.status === 'void').length,
+    printedChecks: checks?.filter(check => check?.status === 'printed').length
   }
 
   const recentChecks = checks
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5)
+    ?.sort((a, b) => new Date(b?.created_at).getTime() - new Date(a?.created_at).getTime())
+    ?.slice(0, 5)
 
   return (
     <div className="space-y-6">
@@ -71,7 +52,7 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
           <h1>Dashboard</h1>
           <p className="text-muted-foreground">Overview of your check printing activity</p>
         </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={onNewCheck}>
+        <Button onClick={() => router.push("/new-check")} className="bg-emerald-600 hover:bg-emerald-700" >
           <Plus className="h-4 w-4 mr-2" />
           New Check
         </Button>
@@ -112,7 +93,7 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl">{formatCurrency(stats.totalAmount)}</div>
+            <div className="text-2xl">{formatCurrency(stats?.totalAmount!)}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -141,23 +122,23 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
             <CardDescription>Latest check activity in your organization</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {isPending ? (
               <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                <LoadingState />
               </div>
-            ) : recentChecks.length === 0 ? (
+            ) : recentChecks?.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No checks yet</h3>
                 <p className="text-muted-foreground mb-4">Create your first check to get started</p>
-                <Button onClick={onNewCheck} className="bg-emerald-600 hover:bg-emerald-700">
+                <Button  className="bg-emerald-600 hover:bg-emerald-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Check
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                {recentChecks.map((check) => (
+                {recentChecks?.map((check) => (
                   <div key={check.id} className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
@@ -165,7 +146,7 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
                       </div>
                       <div>
                         <p className="text-sm">{check.payee}</p>
-                        <p className="text-xs text-muted-foreground">Check #{formatCheckNumber(check.checkNo)}</p>
+                        <p className="text-xs text-muted-foreground">Check #{formatCheckNumber(check?.check_no)}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -179,7 +160,7 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
               </div>
             )}
             <div className="mt-4">
-              <Button onClick={()=>setActiveSection('all-checks')} variant="outline" className="w-full">
+              <Button onClick={() => router.push('/all-checks')} variant="outline" className="w-full cursor-pointer">
                 <Eye className="h-4 w-4 mr-2" />
                 View All Checks
               </Button>
@@ -194,19 +175,19 @@ export function Dashboard({ onNewCheck,setActiveSection }: DashboardProps) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-20 flex-col" onClick={onNewCheck}>
+              <Button onClick={() => router.push('/new-check')} variant="outline" className="h-20 flex-col cursor-pointer" >
                 <Plus className="h-6 w-6 mb-2" />
                 New Check
               </Button>
-              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('all-checks')}>
+              <Button onClick={() => router.push('/all-checks')} variant="outline" className="h-20 flex-col cursor-pointer" >
                 <FileText className="h-6 w-6 mb-2" />
                 All Checks
               </Button>
-              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('accounts')}>
+              <Button onClick={() => router.push('/bank-accounts')} variant="outline" className="h-20 flex-col cursor-pointer" >
                 <Building2 className="h-6 w-6 mb-2" />
                 Bank Accounts
               </Button>
-              <Button variant="outline" className="h-20 flex-col"  onClick={()=>setActiveSection('vendors')}>
+              <Button onClick={() => router.push('/vendors')} variant="outline" className="h-20 flex-col cursor-pointer" >
                 <Users className="h-6 w-6 mb-2" />
                 Vendors
               </Button>

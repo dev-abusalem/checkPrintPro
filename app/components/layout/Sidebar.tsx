@@ -13,29 +13,29 @@ import {
   
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
-interface SidebarProps {
-  activeSection: string
-  onSectionChange: (section: string) => void
-}
+export function Sidebar() {
 
-export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
-  const { user, logout } = useAuth()
-
+  const path = usePathname()
+  const {logout, user} = useAuth()
   const navigation = [
-    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { id: 'new-check', name: 'New Check', icon: Plus },
-    { id: 'all-checks', name: 'All Checks', icon: FileText },
-    { id: 'accounts', name: 'Bank Accounts', icon: Building2 },
-    { id: 'vendors', name: 'Vendors', icon: Users },
-    { id: 'reports', name: 'Reports', icon: BarChart3 },
-    { id: 'settings', name: 'Settings', icon: Settings }
+    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard , href:"/" },
+    { id: 'new-check', name: 'New Check', icon: Plus, href:"/new-check" },
+    { id: 'all-checks', name: 'All Checks', icon: FileText , href:"/all-checks" },
+    { id: 'accounts', name: 'Bank Accounts', icon: Building2 , href:"/bank-accounts" },
+    { id: 'vendors', name: 'Vendors', icon: Users, href:"/vendors" },
+    { id: 'reports', name: 'Reports', icon: BarChart3, href:"/reports" },
+    { id: 'settings', name: 'Settings', icon: Settings, href:"/settings" },
   ]
 
-
+  const handleLogout = () => {
+    logout()
+  }
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-border">
+    <div className="flex flex-col h-full bg-white lg:border-r lg:border-border">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center space-x-3">
@@ -62,17 +62,15 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         <div className="p-4 space-y-1">
           {navigation.map((item) => (
             <div key={item.id}>
-              <Button
-                variant={activeSection === item.id ? 'secondary' : 'ghost'}
+              <Link href={item.href}
                 className={cn(
-                  "w-full justify-start",
-                  activeSection === item.id && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  "w-full  flex justify-start items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 ease-in-out",
+                  item.href === path && "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
                 )}
-                onClick={() => onSectionChange(item.id)}
-              >
+               >
                 <item.icon className="h-4 w-4 mr-3" />
                 {item.name}
-              </Button>
+              </Link>
             </div>
           ))}
         </div>
@@ -83,7 +81,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-3" />
           Sign Out

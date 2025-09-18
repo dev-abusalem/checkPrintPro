@@ -1,39 +1,48 @@
 
 "use client"
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState,  useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Printer, Save, ArrowLeft, Eye, Grid3x3, X } from 'lucide-react'
-import { convertToWords } from '../../lib/utils'
-import { api, type BankAccount, type Vendor } from '../../utils/api'
+import { Printer, Save,  Eye, Grid3x3, Edit, Edit2  } from 'lucide-react'
+import { convertToWords } from '../../../lib/utils'
 import { toast } from 'sonner'
 import Signature from "@uiw/react-signature"
 import { useReactToPrint } from "react-to-print";
- interface NewCheckPageProps {
-  onBack: () => void
-}
+import { useGetBankAccounts } from '@/app/services/hooks/useBankAccount'
+import { CheckInput } from '../types/check.types'
+import { useGetVendors } from '@/app/services/hooks/useVendor'
+import { useCreateCheck } from '@/app/services/hooks/useCheck'
 
-export function NewCheckPage({ onBack }: NewCheckPageProps) {
-  
-  const [formData, setFormData] = useState({
-    bankAccount: '',
+export default function  NewCheckPage() {
+  const {
+    data: bankAccountsData 
+   } = useGetBankAccounts()
+  const {data: vendorsData  } = useGetVendors()
+  const {mutate:createCheck, isPending} = useCreateCheck()
+
+  const [formData, setFormData] = useState<CheckInput>({
+    bank_account_id: '',
     payee: '',
-    amount: '',
+    check_no: 1001,
+    amount: 0,
+    amount_words: '',
     date: new Date().toISOString().split('T')[0],
     memo: '',
-    vendorId: ''
+    vendor_id: '',
+    status: 'draft',
+    
   })
   
-  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
-  const [vendors, setVendors] = useState<Vendor[]>([])
   const [amountCents, setAmountCents] = useState(0)
   const [nextCheckNo, setNextCheckNo] = useState(1001)
   const [saving, setSaving] = useState(false)
   const [printPreview, setPrintPreview] = useState(false)
   const [checkPosition, setCheckPosition] = useState<'top' | 'middle' | 'bottom'>('top')
   const [showGrid, setShowGrid] = useState(false)
+  const [accoutNextCheckNo, setAccoutNextCheckNo] = useState(1001)
+  const [editNextCheckNo, setEditNextCheckNo] = useState(true)
  // handle print 
   const contentRef = useRef<HTMLDivElement>(null)
   const reactToPrintFn = useReactToPrint({
@@ -69,85 +78,65 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
 });
 
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
-    try {
-      const [accountsRes, vendorsRes] = await Promise.all([
-        api.getBankAccounts(),
-        api.getVendors()
-      ])
-      
-      setBankAccounts(accountsRes.accounts || [])
-      setVendors(vendorsRes.vendors || [])
-      
-      // Set default account and next check number
-      if (accountsRes.accounts && accountsRes.accounts.length > 0) {
-        const defaultAccount = accountsRes.accounts[0]
-        setFormData(prev => ({ ...prev, bankAccount: defaultAccount.id }))
-        setNextCheckNo(defaultAccount.nextCheckNo || 1001)
-      }
-    } catch (error) {
-      console.error('Error loading data:', error)
-      toast.error('Failed to load data')
-    }
-  }
-
   const handleAmountChange = (value: string) => {
     const cleanValue = value.replace(/[^\d.]/g, '')
     const parts = cleanValue.split('.')
     if (parts.length > 2) return
     if (parts[1] && parts[1].length > 2) return
     
-    setFormData({ ...formData, amount: cleanValue })
+    setFormData({ ...formData, amount:Number(cleanValue) })
     const numValue = parseFloat(cleanValue) || 0
     setAmountCents(Math.round(numValue * 100))
   }
 
   const handleVendorChange = (vendorId: string) => {
-    const vendor = vendors.find(v => v.id === vendorId)
+    const vendor = vendorsData?.find(v => v.id === vendorId)
     setFormData({
       ...formData,
-      vendorId,
+      vendor_id: vendorId,
       payee: vendor?.name || '',
-      memo: vendor?.defaultMemo || ''
+      memo: vendor?.default_memo || ''
     })
   }
 
   const handleBankAccountChange = (accountId: string) => {
-    const account = bankAccounts.find(a => a.id === accountId)
-    setFormData({ ...formData, bankAccount: accountId })
-    if (account) {
-      setNextCheckNo(account.nextCheckNo || 1001)
+    const account = bankAccountsData?.find(a => a.id === accountId)
+    setFormData({ ...formData, bank_account_id: accountId })
+    if (account?.next_check_no) {
+      setNextCheckNo(account.next_check_no || 1001)
+      setAccoutNextCheckNo(account.next_check_no || 1001)
     }
   }
 
   const handleSave = async () => {
-    if (!formData.bankAccount || !formData.payee || !formData.amount) {
+    if (!formData.bank_account_id || !formData.payee || !formData.amount) {
       toast.error('Please fill in all required fields')
       return
     }
-
+    if(nextCheckNo > 99999){
+      return toast.error("Next check number is greater than 5 digits")
+    }
     setSaving(true)
     try {
-        // const signatureURL = await uploadSignatureToStorage()
-        // if (!signatureURL) return
+      createCheck({
+        data:{
+          bank_account_id: formData.bank_account_id,
+          payee: formData.payee,
+          amount: amountCents,
+          amount_words: convertToWords(amountCents),
+          date: formData.date,
+          memo: formData.memo,
+          check_no: nextCheckNo,
+          vendor_id: formData.vendor_id,
+          status:"draft",
+        },
+        accoutNextCheckNo: accoutNextCheckNo,
+        onSuccess: () => {
+          window?.location.reload()
+        }
 
-      await api.createCheck({
-        bankAccount: formData.bankAccount,
-        payee: formData.payee,
-        amount: amountCents,
-        amountWords: convertToWords(amountCents),
-        date: formData.date,
-        memo: formData.memo,
-        checkNo: nextCheckNo
       })
-      
-      toast.success('Check saved successfully')
-      onBack()
-    } catch (error) {
+     } catch (error) {
       console.error('Error saving check:', error)
       toast.error('Failed to save check')
     } finally {
@@ -157,33 +146,39 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
 
 
   const handlePrint = async () => {
-    if (!formData.bankAccount || !formData.payee || !formData.amount) {
+    if (!formData.bank_account_id || !formData.payee || !formData.amount) {
       toast.error('Please fill in all required fields')
       return
+    }
+    if(nextCheckNo > 99999){
+      return toast.error("Next check number is greater than 5 digits")
     }
 
     setSaving(true)
     try {
-      // const signatureURL = await uploadSignatureToStorage()
-      // if (!signatureURL) return
-      // Save the check first
-      await api.createCheck({
-        bankAccount: formData.bankAccount,
-        payee: formData.payee,
-        amount: amountCents,
-        amountWords: convertToWords(amountCents),
-        date: formData.date,
-        memo: formData.memo,
-        checkNo: nextCheckNo,
-        status: 'printed'
+       
+      createCheck({
+        data:{
+          bank_account_id: formData.bank_account_id,
+          payee: formData.payee,
+          amount: amountCents,
+          amount_words: convertToWords(amountCents),
+          date: formData.date,
+          memo: formData.memo,
+          check_no: nextCheckNo,
+          vendor_id: formData.vendor_id,
+          status:"printed",
+        },
+        accoutNextCheckNo: accoutNextCheckNo,
+        onSuccess: () => {
+          window?.location.reload()
+        }
       })
       
       // Trigger print
       reactToPrintFn()
-      
-      toast.success('Check printed successfully')
-      onBack()
-    } catch (error) {
+
+      } catch (error) {
       console.error('Error printing check:', error)
       toast.error('Failed to print check')
     } finally {
@@ -191,67 +186,16 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
     }
   }
 
-  const selectedAccount = bankAccounts.find(a => a.id === formData.bankAccount)
+  const selectedAccount = bankAccountsData && bankAccountsData?.find(a => a.id === formData.bank_account_id)
 
   // add signature function for upload image in supabase storage and clear function
-    const [signatureDataURL, setSignatureDataURL] = useState<string>("")
-    const [isSignatureEmpty, setIsSignatureEmpty] = useState(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signatureRef = useRef<any>(null)
-
-  const uploadSignatureToStorage = async (): Promise<string | null> => {
-    if (!signatureRef.current || isSignatureEmpty) {
-      toast.error("Please provide a signature first")
-      return null
-    }
-
-    try {
-      // Get signature as data URL
-      const dataURL = signatureRef.current.toDataURL("image/png")
-
-      // Convert data URL to blob
-      const response = await fetch(dataURL)
-      const blob = await response.blob()
-
-      // Create a unique filename
-      const timestamp = new Date().getTime()
-      const filename = `signature_${timestamp}.png`
-
-      // For now, store locally - can be extended for Supabase when integration is added
-      // When Supabase is integrated, replace this with:
-      // const { data, error } = await supabase.storage
-      //   .from('signatures')
-      //   .upload(filename, blob)
-
-      console.log("[v0] Signature ready for upload:", filename)
-      setSignatureDataURL(dataURL)
-      toast.success("Signature saved successfully")
-
-      return dataURL
-    } catch (error) {
-      console.error("Error uploading signature:", error)
-      toast.error("Failed to save signature")
-      return null
-    }
-  }
-
-  const clearSignature = () => {
-    if (signatureRef.current) {
-      signatureRef.current.clear()
-      setSignatureDataURL("")
-      setIsSignatureEmpty(true)
-      toast.success("Signature cleared")
-    }
-  }
 
   const handleSignatureEnd = () => {
     if (signatureRef.current) {
       const isEmpty = signatureRef.current.isEmpty()
-      setIsSignatureEmpty(isEmpty)
-
       if (!isEmpty) {
-        const dataURL = signatureRef.current.toDataURL("image/png")
-        setSignatureDataURL(dataURL)
+       signatureRef.current.toDataURL("image/png")
       }
     }
   }
@@ -259,11 +203,9 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
  
 
   const renderCheckContent = () => (
-    <div  ref={contentRef} className="pt-4  w-full h-full  relative">
-
+    <div  ref={contentRef} className="pt-4 w-3xl lg:w-full h-full overflow-auto  relative">
       {/* Header Section */}
       <div className="flex justify-between items-center px-4">
-        {/* Bank Information */}
         <div>
           {selectedAccount && (
             <>
@@ -370,19 +312,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
               }}
               onEnded={handleSignatureEnd}
             />
-            {/* {
-              signatureRef.current && <div className="absolute top-0 right-0 flex gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-6 w-6 p-0 bg-transparent"
-                onClick={clearSignature}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-            } */}
+             
           </div>
         </div>
       </div>
@@ -397,7 +327,7 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
                  letterSpacing: '0.15em'
               }}
             >
-              ⑆{selectedAccount.routingNumber}⑆ {selectedAccount.accountNumber}⑈ {nextCheckNo.toString().padStart(4, '0')}
+              ⑆{selectedAccount.routing_number}⑆ {selectedAccount.account_number}⑈ {nextCheckNo.toString().padStart(4, '0')}
             </div>
           </div>
         )}
@@ -450,18 +380,12 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
   return (
     <div className="space-y-6 print-hide">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Checks
-          </Button>
+      <div className="lg:flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">New Check</h1>
             <p className="text-muted-foreground">Create and print a new check per U.S. Check 21 standards</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
+         </div>
+        <div className="flex flex-wrap lg:flex-nowrap space-y-2 lg:space-y-0 mt-2 lg:mt-0 items-center space-x-2">
           <Button 
             variant="outline" 
             onClick={() => setShowGrid(!showGrid)}
@@ -478,11 +402,11 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
             <Eye className="h-4 w-4 mr-2" />
             {printPreview ? 'Exit Preview' : 'Print Preview'}
           </Button>
-          <Button variant="outline" onClick={handleSave} disabled={saving}>
+          <Button  variant="outline" onClick={handleSave} disabled={isPending}>
             <Save className="h-4 w-4 mr-2" />
             Save Draft
           </Button>
-          <Button onClick={handlePrint} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handlePrint} disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700">
             <Printer className="h-4 w-4 mr-2" />
             Print Check
           </Button>
@@ -496,12 +420,12 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
               <label className="text-sm font-medium mb-2 block">Bank Account *</label>
-              <Select value={formData.bankAccount} onValueChange={handleBankAccountChange}>
+              <Select value={formData.bank_account_id} onValueChange={handleBankAccountChange}>
                 <SelectTrigger className='w-full'>
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {bankAccounts.map((account) => (
+                  {bankAccountsData?.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.name}
                     </SelectItem>
@@ -511,12 +435,12 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Vendor (Optional)</label>
-              <Select value={formData.vendorId} onValueChange={handleVendorChange}>
+              <Select value={formData.vendor_id} onValueChange={handleVendorChange}>
                 <SelectTrigger className='w-full'>
                   <SelectValue placeholder="Select vendor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {vendors.map((vendor) => (
+                  {vendorsData?.map((vendor) => (
                     <SelectItem key={vendor.id} value={vendor.id}>
                       {vendor.name}
                     </SelectItem>
@@ -537,13 +461,15 @@ export function NewCheckPage({ onBack }: NewCheckPageProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className='relative'>
               <label className="text-sm font-medium mb-2 block">Check Number</label>
               <Input
-                value={nextCheckNo.toString().padStart(4, '0')}
-                disabled
+                value={nextCheckNo}
+                disabled={editNextCheckNo}
                 className="bg-muted"
+                onChange={(e) => setNextCheckNo(Number(e.target.value))}
               />
+              <Edit onClick={() => setEditNextCheckNo(!editNextCheckNo)} className="w-5 h-5 mt-1 absolute right-2 top-1/2 cursor-pointer" />
             </div>
           </div>
         </CardContent>

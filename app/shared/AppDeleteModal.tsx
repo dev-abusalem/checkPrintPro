@@ -19,7 +19,7 @@ interface AppDeleteModalProps{
 const AppDeleteModal = ({onClick,text,loading,children}:AppDeleteModalProps)=>{
   return(
      <Dialog>
-  <DialogTrigger className='w-full'>{children}</DialogTrigger>
+  <DialogTrigger asChild={true} className='w-full'>{children}</DialogTrigger>
   <DialogContent>
     <DialogHeader>
       <DialogTitle></DialogTitle>

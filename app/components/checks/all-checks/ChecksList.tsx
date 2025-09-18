@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,114 +15,98 @@ import {
   Printer, 
   MoreHorizontal,
   Plus,
-  CircleOff
+  CircleOff,
+  CircleOffIcon
 } from 'lucide-react'
-import { formatCurrency, getStatusColor, formatCheckNumber } from '../../lib/utils'
+import { formatCurrency, getStatusColor, formatCheckNumber } from '../../../lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { api, type Check } from '../../utils/api'
+import { api  } from '../../../utils/api'
 import { toast } from 'sonner'
 import AppModal from '@/app/shared/AppModal'
 import AppDeleteModal from '@/app/shared/AppDeleteModal'
 import { exportToCSV } from '@/app/utils/exportCSV'
-interface ChecksListProps {
-  onNewCheck?: () => void
-}
+import { useDeleteCheck, useGetChecks, useUpdateCheck } from '@/app/services/hooks/useCheck'
+import { Check } from '../types/check.types'
+import EmptyState from '@/app/shared/EmptyState'
+import LoadingState from '@/app/shared/LoadingState'
+import { useRouter } from 'next/navigation'
 
-export function ChecksList({ onNewCheck }: ChecksListProps) {
+
+export default function ChecksList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [checks, setChecks] = useState<Check[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadChecks()
-  }, [])
-
-  const loadChecks = async () => {
-    try {
-      setLoading(true)
-      const response = await api.getChecks()
-      setChecks(response.checks || [])
-    } catch (error) {
-      console.error('Error loading checks:', error)
-      toast.error('Failed to load checks')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredChecks = checks.filter(check => {
-    const matchesSearch = check.payee.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         check.checkNo.toString().includes(searchTerm)
+  const {data, isPending} = useGetChecks()
+  const filteredChecks = data?.filter(check => {
+    const matchesSearch = check?.payee?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         check?.check_no.toString().includes(searchTerm)
     const matchesStatus = statusFilter === 'all' || check.status === statusFilter
     return matchesSearch && matchesStatus
   })
-  console.log(filteredChecks)
-  const handlePrint = async (checkId: string) => {
-    try {
-      await api.updateCheck(checkId, { status: 'printed' })
-      toast.success('Check printed successfully')
-      loadChecks()
-    } catch (error) {
-      console.error('Error printing check:', error)
-      toast.error('Failed to print check')
-    }
+  const {mutate:updateCheck, isPending:updateLoading} = useUpdateCheck()
+  const {mutate:deleteCheck, isPending:deleteLoading} = useDeleteCheck()
+  const router = useRouter()
+   const handlePrint = async (checkId: string) => {
+    if(!checkId) return toast.error("Check not found")
+     updateCheck({
+        id: checkId,
+        data: { status: 'printed' }
+      })
+    
   }
 
   const handleVoid = async (checkId: string) => {
-    try {
-      await api.updateCheck(checkId, { status: 'void' })
-      toast.success('Check voided')
-      loadChecks()
-    } catch (error) {
-      console.error('Error voiding check:', error)
-      toast.error('Failed to void check')
-    }
+    if(!checkId) return toast.error("Check not found")
+     updateCheck({
+        id: checkId,
+        data: { status: 'void' }
+      })
   }
 
   // handle delete check
-  const [deleteLoading, setDeleteLoading] = useState(false)
   const handleDelete = async (checkId: string) => {
     if(!checkId) return toast.error('Check not found')
-    try {
-      setDeleteLoading(true)
-      await api.deleteCheck(checkId)
-      toast.success('Check deleted')
-      loadChecks()
-    } catch (error) {
-      console.error('Error deleting check:', error)
-      toast.error('Failed to delete check')
-    } finally {
-      setDeleteLoading(false)
-    }
+      deleteCheck({
+        id: checkId,
+      })
   }
 
-  const getActionButtons = (check: Check) => {
-    if (check.status === 'created') {
-      return (
-        <div className="flex space-x-1">
-          <Button size="sm" variant="outline" onClick={() => handlePrint(check.id)}>
-            <Printer className="h-3 w-3" />
-          </Button>
-        </div>
-      )
-    }
-  }
+
+
+ 
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <>
+     {
+      isPending ? (
+        <div className='h-screen flex items-center justify-center'>
+          <LoadingState />
+        </div>
+      ):
+      data && data?.length <1 ? 
+      <div className='h-screen flex items-center justify-center'>
+        <EmptyState
+        Icon={CircleOffIcon}
+        title="No checks found"
+        description="Create a new check to get started"
+        isAddButton
+        buttonText='Create New Check'
+        addNewUrl='/new-check'
+      />
+      </div>
+      :
+      <div className="space-y-6">
+      <div className="lg:flex items-center justify-between">
         <div>
           <h1>All Checks</h1>
           <p className="text-muted-foreground">Manage and track all your checks</p>
         </div>
-        <div className="flex space-x-2">
-          <Button   onClick={() => exportToCSV(filteredChecks , "checks_export")} variant="outline">
+        <div className="flex space-x-2 mt-3 lg:mt-0">
+          <Button   onClick={() => exportToCSV(filteredChecks! , "checks_export")} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
         
-          <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={onNewCheck}>
+          <Button  className="bg-emerald-600 hover:bg-emerald-700" onClick={()=> router.push("/new-check")}>
             <Plus className="h-4 w-4 mr-2" />
             New Check
           </Button>
@@ -130,23 +115,23 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="lg:flex items-center space-y-2 lg:space-y-0 justify-between">
             <div>
               <CardTitle>Checks</CardTitle>
-              <CardDescription>{filteredChecks.length} checks found</CardDescription>
+              <CardDescription>{filteredChecks?.length} checks found</CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="lg:flex space-y-2 lg:space-y-0 items-center lg:space-x-2">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search checks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-64"
+                  className="pl-8 w-full lg:w-64"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full lg:w-40">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -162,12 +147,7 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-            </div>
-          ) : (
-            <Table>
+           <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Check #</TableHead>
@@ -180,18 +160,18 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredChecks.length === 0 ? (
+                {filteredChecks?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No checks found. Create your first check to get started.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredChecks.map((check) => (
-                    <TableRow key={check.id}>
-                      <TableCell className="font-mono">{formatCheckNumber(check.checkNo)}</TableCell>
+                  filteredChecks?.map((check) => (
+                    <TableRow key={check?.id}>
+                      <TableCell className="font-mono">{formatCheckNumber(check.check_no)}</TableCell>
                       <TableCell>{new Date(check.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{check.payee}</TableCell>
+                      <TableCell>{check?.payee}</TableCell>
                       <TableCell>{formatCurrency(check.amount)}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className={getStatusColor(check.status)}>
@@ -221,7 +201,7 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
                                   Void
                                 </DropdownMenuItem>
                               )}
-                               {check.status === 'created' && (
+                               {check.status === 'pending' && (
                                 <DropdownMenuItem onClick={() => handlePrint(check.id)}  >
                                   <Printer className="h-4 w-4 mr-2" />
                                   Print
@@ -242,31 +222,19 @@ export function ChecksList({ onNewCheck }: ChecksListProps) {
                 )}
               </TableBody>
             </Table>
-          )}
         </CardContent>
       </Card>
     </div>
+     }
+    </>
   )
 }
 
 
-interface CheckData {
-  id: string
-  date: string
-  memo: string
-  payee: string
-  amount: number
-  status: string
-  checkNo: number
-  createdAt: string
-  updatedAt: string
-  amountWords: string
-  bankAccount: string
-}
-
+ 
 interface CheckViewModalProps {
    
-  data: CheckData | null
+  data: Check | null
 }
 const ViewDetails = ({
   data,
@@ -285,21 +253,21 @@ const ViewDetails = ({
     <>
       <h1 className='text-2xl font-semibold text-black text-center underline'>Details of a check</h1>
       <div className="space-y-1 mt-4">
-          <Item label="Check No" value={data.checkNo} />
+          <Item label="Check No" value={data.check_no} />
           <Item label="Date" value={data.date} />
           <Item label="Payee" value={data.payee} />
           <Item label="Memo" value={data.memo} />
           <Item label="Amount (Cents)" value={`$${data.amount}`} />
-          <Item label="Amount (words)" value={data.amountWords} />
+          <Item label="Amount (words)" value={data.amount_words} />
           <Item label="Status" value={data.status} />
-          <Item label="Bank Account" value={data.bankAccount} />
+          <Item label="Bank Account" value={data.bank_account_id} />
           <Item
             label="Created At"
-            value={new Date(data.createdAt).toLocaleString()}
+            value={new Date(data.created_at).toLocaleString()}
           />
           <Item
             label="Updated At"
-            value={new Date(data.updatedAt).toLocaleString()}
+            value={new Date(data.updated_at).toLocaleString()}
           />
           <Item label="Check ID" value={data.id} />
         </div>

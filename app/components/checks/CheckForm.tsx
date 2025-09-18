@@ -10,6 +10,7 @@ import { Calendar, DollarSign, Save, Send, Building2 } from 'lucide-react'
 import { formatCurrency, convertToWords } from '../../lib/utils'
 import { toast } from 'sonner'
 
+
 export function CheckForm() {
   const [formData, setFormData] = useState({
     bankAccount: '',

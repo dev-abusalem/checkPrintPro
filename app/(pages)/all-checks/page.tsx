@@ -1,9 +1,8 @@
+ import ChecksList from '@/app/components/checks/all-checks/ChecksList'
 import React from 'react'
 
-const AllChecck = () => {
-  return (
-    <div>AllChecck</div>
-  )
+const page = () => {
+  return <ChecksList />
 }
 
-export default AllChecck
+export default page

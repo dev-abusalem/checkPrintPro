@@ -7,8 +7,7 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { useState } from 'react'
 import { AuthProvider, useAuth } from './components/auth/AuthProvider'
-import { LoginForm } from './components/auth/LoginForm'
-
+import AuthComponentMain from './components/auth/AuthComponentMain'
 // Create a client
 const queryClient = new QueryClient()
 
@@ -24,15 +23,14 @@ const ClientLayout = ({children}:{children:React.ReactNode}) => {
       loading ?  <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
         </div>:
-      !user ? <LoginForm />
+      !user ? <AuthComponentMain />
       :
       <QueryClientProvider client={queryClient}>
        
        <div className="flex h-screen bg-background">
       <div className="w-64 flex-shrink-0">
         <Sidebar
-          activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
+          
         />
       </div>
       <div className="flex-1 overflow-auto">

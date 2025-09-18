@@ -13,6 +13,7 @@ const PrintCheck = ({formData,selectedAccount,amountCents}:PrintCheckProps) => {
     const [isSignatureEmpty, setIsSignatureEmpty] = useState(true)
     const [signatureDataURL, setSignatureDataURL] = useState("")
     const signatureRef = useRef<any>(null)
+    // check print
      const handleSignatureEnd = () => {
     if (signatureRef.current) {
       const isEmpty = signatureRef.current.isEmpty()

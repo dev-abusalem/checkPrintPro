@@ -1,26 +1,28 @@
-"use client";
+"use client"
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "../auth/AuthProvider";
-import { Sidebar } from "./Sidebar";
-import MobileMenu from "./MobileMenu";
+import type React from "react"
 
-const unprotectedRoutes = ["/login", "/register"];
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { Sidebar } from "./Sidebar"
+import MobileMenu from "./MobileMenu"
+import { useAuth } from "../auth/AuthProvider"
+
+const unprotectedRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  
-  const pathname = usePathname();
-  const router = useRouter();
+  const { user, loading } = useAuth()
 
-  const isUnprotected = unprotectedRoutes.includes(pathname);
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const isUnprotected = unprotectedRoutes.includes(pathname)
 
   useEffect(() => {
     if (!loading && !user && !isUnprotected) {
-      router.push("/login");
+      router.push("/login")
     }
-  }, [user, loading, pathname, isUnprotected, router]);
+  }, [user, loading, pathname, isUnprotected, router])
 
   if (loading) {
     return (
@@ -28,10 +30,10 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
       </div>
     )
-  } 
+  }
 
   if (!user && !isUnprotected) {
-    return null;
+    return null
   }
 
   // ✅ Proper layout wrapper with flex
@@ -40,7 +42,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       {!isUnprotected && (
         <>
           <div className="w-64 flex-shrink-0 hidden lg:block">
-            <Sidebar  />
+            <Sidebar />
           </div>
           <div className=" border border-gray-300 lg:hidden px-4 py-2">
             <MobileMenu />
@@ -51,5 +53,5 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
         <div className="p-6">{children}</div>
       </div>
     </div>
-  );
+  )
 }

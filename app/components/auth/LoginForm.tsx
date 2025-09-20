@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { useAuth } from './AuthProvider'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
-import { toast } from 'sonner'
 import { useLoginUser } from '@/app/services/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -108,7 +106,7 @@ export function LoginForm() {
                           Don't have an account? Sign up
                         </Link>
                            <div>
-                            <Button variant="link" className="text-sm text-muted-foreground">
+                            <Button onClick={() => {router.push('/forgot-password')}} variant="link" className="text-sm text-muted-foreground">
                               Forgot your password?
                             </Button>
                           </div>

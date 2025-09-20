@@ -1,15 +1,17 @@
+"use client"
+
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { useAuth } from './AuthProvider'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSignupUser } from '@/app/services/hooks/useUser'
+import { useRouter } from 'next/navigation'
 
-export function SignupForm({setIsSignUp}:{setIsSignUp:React.Dispatch<React.SetStateAction<boolean>>}) {
-    const {mutate: signup} = useSignupUser()
+export function SignupForm() {
+  const {mutate: signup} = useSignupUser()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,22 +19,17 @@ export function SignupForm({setIsSignUp}:{setIsSignUp:React.Dispatch<React.SetSt
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
+    const router = useRouter()
     e.preventDefault()
     if (!name.trim()) return toast.error('Please enter your name')
+    signup({email, password, name},
+      {
+        onSuccess: () => {
+          router.push("/login")
+        },
+      } 
+    )
 
-    setLoading(true)
-    try {
-        signup({email, password, name})
-      toast.success('Account created! Please check your email to verify your account.')
-    } catch (error: any) {
-      if (error.message?.includes('User already registered')) {
-        toast.error('An account with this email already exists. Please sign in instead.')
-      } else {
-        toast.error(error.message || 'Failed to create account')
-      }
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (

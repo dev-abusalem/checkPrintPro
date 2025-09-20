@@ -126,7 +126,7 @@ export const getAuthUser = async (): Promise<any | null> => {
 // Forgot password (send reset link)
 export const forgotPassword = async (email: string): Promise<{ message: string }> => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}reset-password`,
   })
 
   if (error) throw error

@@ -1,5 +1,4 @@
 
-import { clientUrl } from '@/app/config/env'
 import { supabase } from '../../lib/supabase'
 
 export interface UserRow {
@@ -127,7 +126,7 @@ export const getAuthUser = async (): Promise<any | null> => {
 // Forgot password (send reset link)
 export const forgotPassword = async (email: string): Promise<{ message: string }> => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: clientUrl,
+    redirectTo: `https://check-print-pro.vercel.app/reset-password`,
   })
 
   if (error) throw error

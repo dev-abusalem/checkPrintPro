@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {  createCheck, deleteCheck, getChecks, updateCheck } from "../api/check";
 import { toast } from "sonner";
 import { CheckInput ,Check, CheckApiResponse, CheckUpdateInput} from "@/app/components/checks/types/check.types";
+import { useAuth } from "@/app/components/auth/AuthProvider";
+import { demoChecks } from "@/app/constants/demo";
 
 // Hook for fetching race results for a specific user
 export const CHECK_KEYS = {
@@ -14,9 +16,13 @@ export const CHECK_KEYS = {
 
  
 export const useGetChecks= () => {
+  const { isDemo } = useAuth();
   return useQuery({
     queryKey: CHECK_KEYS.all,
-    queryFn:getChecks,
+    queryFn:()=>{
+       if (isDemo) return demoChecks;
+      return getChecks();
+    },
     select: (accounts) => accounts.filter((v) => v.created_at !== ""),
   });
 }; 
@@ -29,9 +35,15 @@ interface CreateCheckParams {
 }
 
 export function useCreateCheck() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ data, accoutNextCheckNo}: CreateCheckParams) => createCheck(data,accoutNextCheckNo),
+    mutationFn: ({ data, accoutNextCheckNo}: CreateCheckParams) => {
+      if (isDemo){
+        throw new Error("Demo mode: Cannot create checks");
+      }
+      return createCheck(data,accoutNextCheckNo)
+    },
     onSuccess: (created: Check, variables: CreateCheckParams) => {
       toast.success("Check created successfully.")
       qc.setQueryData<CheckApiResponse>(CHECK_KEYS.all, (prev) => {
@@ -62,9 +74,13 @@ interface DeleteCheckParams {
   onSuccess?: () => void;
 }
 export const useDeleteCheck = () => {
-   const qc = useQueryClient();
+  const { isDemo } = useAuth();
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id }: DeleteCheckParams) => deleteCheck(id),
+    mutationFn: ({ id }: DeleteCheckParams) =>{
+       if (isDemo) throw new Error("Demo mode: Cannot delete checks");
+       return deleteCheck(id)
+    },
     onSuccess: (_: any, variables: DeleteCheckParams) => {
       toast.success("Check deleted successfully.");
       qc.invalidateQueries({ queryKey: CHECK_KEYS.all });
@@ -85,10 +101,14 @@ interface CheckUpdateParams {
 }
 
 export function useUpdateCheck() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: CheckUpdateParams) => updateCheck(id, data),
+    mutationFn: ({ id, data }: CheckUpdateParams) => {
+      if (isDemo) throw new Error("Demo mode: Cannot update checks");
+      return updateCheck(id, data);
+    },
     onSuccess: (updated: Check, variables: CheckUpdateParams) => {
       qc.setQueryData<Check[]>(CHECK_KEYS.all, (old) => {
         if (!old) return [updated];

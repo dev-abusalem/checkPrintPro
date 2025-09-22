@@ -130,3 +130,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide date picker icon (Chrome, Edge, Safari) */
+.date-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Hide in Firefox */
+.date-input {
+  -moz-appearance: textfield;
+}
+
+/* Hide in IE/Edge (legacy) */
+.date-input::-ms-clear,
+.date-input::-ms-expand {
+  display: none;
+}
+

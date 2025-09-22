@@ -11,7 +11,7 @@ import { useAuth } from "../auth/AuthProvider"
 const unprotectedRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, loginDemo } = useAuth()
 
   const pathname = usePathname()
   const router = useRouter()
@@ -19,6 +19,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const isUnprotected = unprotectedRoutes.includes(pathname)
 
   useEffect(() => {
+
+    // Redirect to login page if user is not authenticated
     if (!loading && !user && !isUnprotected) {
       router.push("/login")
     }

@@ -14,7 +14,6 @@ export const getBankAccounts = async (
         .select("*")
         .eq("user_id", user.id);
 
-  console.log({data: data});
   if (error) {
     throw error;
   }

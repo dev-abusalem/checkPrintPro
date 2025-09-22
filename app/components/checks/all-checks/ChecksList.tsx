@@ -69,10 +69,6 @@ export default function ChecksList() {
       })
   }
 
-
-
- 
-
   return (
     <>
      {
@@ -207,10 +203,10 @@ export default function ChecksList() {
                                 </DropdownMenuItem>
                               )}
                                <AppDeleteModal loading={deleteLoading} text='Are you sure you want to delete this check ?' onClick={()=>handleDelete(check.id)} >
-                                  <div className='flex justify-start items-center gap-2 text-sm  px-2 py-1.5 rounded-md hover:bg-gray-100 w-full '>
+                                  <button className='flex justify-start cursor-pointer items-center gap-2 text-sm  px-2 py-1.5 rounded-md hover:bg-gray-100 w-full '>
                                       <Trash2 className="h-4 w-4 mr-2 text-gray-500" />
                                       <span>Delete</span>
-                                  </div>
+                                  </button>
                                </AppDeleteModal>
                             </DropdownMenuContent>
                           </DropdownMenu>

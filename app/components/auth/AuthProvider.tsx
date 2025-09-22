@@ -8,12 +8,16 @@ interface AuthContextType {
   user: any;
   loading: boolean;
   logout: () => void;
+  loginDemo: () => void;
+  isDemo: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  logout: () => {}
+  logout: () => {},
+  loginDemo: () => {},
+  isDemo: false
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -29,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const type = hashParams.get('type');
 
       if (accessToken && refreshToken) {
-        // ✅ Set Supabase session from URL params
         const { data, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
@@ -69,8 +72,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const loginDemo = () => {
+    setUser({
+      id: 'demo-user-1',
+      email: 'demo@checkprint.app',
+      name: 'Demo User',
+      organization_id: 'demo-org-1',
+      isDemo: true,
+    }),
+     router.push("/");
+  }
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout,loginDemo , isDemo: user?.isDemo ?? false}}>
       {children}
     </AuthContext.Provider>
   );

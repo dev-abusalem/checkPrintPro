@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {   createBankAccount, deleteBankAccount, getBankAccount, getBankAccounts, updateBankAccount } from "../api/bank-account";
 import { BankAccountApiResponse, BankAccountInput, BankAccount } from "@/app/components/accounts/types/bank-account-types";
 import { toast } from "sonner";
+import { demoBankAccounts } from "@/app/constants/demo";
+import { useAuth } from "@/app/components/auth/AuthProvider";
  
 
 export const BANK_ACCOUNT_KEYS = {
@@ -13,9 +15,13 @@ export const BANK_ACCOUNT_KEYS = {
 };
 // Hook for fetching race results for a specific user
 export const useGetBankAccounts = () => {
+    const { isDemo } = useAuth();
   return useQuery({
     queryKey: BANK_ACCOUNT_KEYS.all,
-    queryFn:getBankAccounts,
+   queryFn: async () => {
+      if (isDemo) return demoBankAccounts;
+      return getBankAccounts();    
+    },
     select: (accounts) => accounts.filter((v) => v.created_at !== ""),
   });
 }; 
@@ -36,9 +42,15 @@ interface CreateBankAccountParams {
 }
 
 export function useCreateBankAccount() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ data }: CreateBankAccountParams) => createBankAccount(data),
+    mutationFn: ({ data }: CreateBankAccountParams) =>{
+      if (isDemo){
+        throw new Error("Demo mode: Cannot create bank accounts");
+      }
+      return  createBankAccount(data)
+    },
     onSuccess: (created: BankAccount, variables: CreateBankAccountParams) => {
       toast.success("Bank account created successfully.")
       qc.setQueryData<BankAccountApiResponse>(BANK_ACCOUNT_KEYS.all, (prev) => {
@@ -69,9 +81,13 @@ interface DeleteBankAccountParams {
   onSuccess?: () => void;
 }
 export const useDeleteBankAccount = () => {
+  const { isDemo } = useAuth();
    const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id }: DeleteBankAccountParams) => deleteBankAccount(id),
+    mutationFn: ({ id }: DeleteBankAccountParams) => {
+      if(isDemo) throw new Error("Demo mode: Cannot delete bank accounts");
+      return deleteBankAccount(id);
+    },
     onSuccess: (_: any, variables: DeleteBankAccountParams) => {
       toast.success("Bank account deleted successfully.");
       qc.invalidateQueries({ queryKey: BANK_ACCOUNT_KEYS.all });
@@ -92,10 +108,14 @@ interface BankAccountUpdateParams {
 }
 
 export function useUpdateBankAccount() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: BankAccountUpdateParams) => updateBankAccount(id, data),
+    mutationFn: ({ id, data }: BankAccountUpdateParams) => {
+      if(isDemo) throw new Error("Demo mode: Cannot delete bank accounts");
+      return updateBankAccount(id, data);
+    },
     onSuccess: (updated: BankAccount, variables: BankAccountUpdateParams) => {
       qc.setQueryData<BankAccount[]>(BANK_ACCOUNT_KEYS.all, (old) => {
         if (!old) return [updated];

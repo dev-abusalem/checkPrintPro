@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Vendor, VendorApiResponse, VendorInput } from "@/app/components/vendors/types/vendor.types";
 import { createVendor, deleteVendor, getVendors, updateVendor } from "../api/vendor";
+import { useAuth } from "@/app/components/auth/AuthProvider";
+import { demoVendors } from "@/app/constants/demo";
 
 // Hook for fetching race results for a specific user
 export const VENDOR_KEYS = {
@@ -14,9 +16,13 @@ export const VENDOR_KEYS = {
 
  
 export const useGetVendors= () => {
+  const { isDemo } = useAuth();
   return useQuery({
     queryKey: VENDOR_KEYS.all,
-    queryFn:getVendors,
+    queryFn:()=>{
+      if (isDemo) return demoVendors; // 👈 return static demo
+      return getVendors();
+    },
     select: (vendors) => vendors.filter((v) => v.created_at !== ""),
   });
 }; 
@@ -28,9 +34,15 @@ interface CreateVendorParams {
 }
 
 export function useCreateVendor() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ data }: CreateVendorParams) => createVendor(data),
+    mutationFn: ({ data }: CreateVendorParams) => {
+      if (isDemo){
+        throw new Error("Demo mode: Cannot create vendors");
+      }
+      return createVendor(data);
+    },
     onSuccess: (created: Vendor, variables: CreateVendorParams) => {
       toast.success("Vendor created successfully.")
       qc.setQueryData<VendorApiResponse>(VENDOR_KEYS.all, (prev) => {
@@ -61,9 +73,15 @@ interface DeleteVendorParams {
   onSuccess?: () => void;
 }
 export const useDeleteVendor = () => {
+  const { isDemo } = useAuth();
    const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id }: DeleteVendorParams) => deleteVendor(id),
+    mutationFn: ({ id }: DeleteVendorParams) => {
+      if (isDemo){
+        throw new Error("Demo mode: Cannot create vendors");
+      }
+      return deleteVendor(id)
+    },
     onSuccess: (_: any, variables: DeleteVendorParams) => {
       toast.success("Vendor deleted successfully.");
       qc.invalidateQueries({ queryKey: VENDOR_KEYS.all });
@@ -84,10 +102,15 @@ interface VendorUpdateParams {
 }
 
 export function useUpdateVendor() {
+  const { isDemo } = useAuth();
   const qc = useQueryClient();
-
   return useMutation({
-    mutationFn: ({ id, data }: VendorUpdateParams) => updateVendor(id, data),
+    mutationFn: ({ id, data }: VendorUpdateParams) =>{
+      if (isDemo){
+        throw new Error("Demo mode: Cannot create vendors");
+      }
+      return updateVendor(id, data)
+    } ,
     onSuccess: (updated: Vendor, variables: VendorUpdateParams) => {
       qc.setQueryData<Vendor[]>(VENDOR_KEYS.all, (old) => {
         if (!old) return [updated];

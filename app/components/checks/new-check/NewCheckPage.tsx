@@ -227,17 +227,20 @@ export default function  NewCheckPage() {
        
       </div>
 
-      <div className="flex justify-end items-center px-4">
+      <div className="flex justify-end   items-center px-4">
           {/* Memo */}
           <div className="w-52 flex items-center gap-2">
                <label className="  font-rozha-font tracking-wide">Date</label>
-             <input
-              placeholder="Optional memo"
-              value={formData.date}
-              type='date'
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full h-8 border-0 border-b border-gray-600 rounded-none bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
-            />
+              <input
+  placeholder="Optional memo"
+  value={formData.date}
+  type="date"
+  onChange={(e) =>
+    setFormData({ ...formData, date: e.target.value })
+  }
+  className="date-input w-full h-8 border-0 border-b border-gray-600 rounded-none bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+/>
+
           </div>
       </div>
 

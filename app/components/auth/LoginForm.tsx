@@ -8,9 +8,11 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { useLoginUser } from '@/app/services/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from './AuthProvider'
 
 export function LoginForm() {
    const { mutate:login , isPending} = useLoginUser()
+   const {loginDemo} = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -96,7 +98,7 @@ export function LoginForm() {
                 <span className="bg-background px-2 text-muted-foreground">Or try demo</span>
               </div>
             </div>
-            <Button variant="outline" onClick={() => {router.push('/demo')}} disabled={isPending} className="w-full">
+            <Button variant="outline" onClick={() => loginDemo()} disabled={isPending} className="w-full">
               Try Demo
             </Button>
             <div className="mt-4 text-center space-y-2">

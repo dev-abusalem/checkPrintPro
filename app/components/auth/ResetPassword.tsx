@@ -10,6 +10,7 @@ import { Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
 import { useResetPassword } from "@/app/services/hooks/useUser"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/app/lib/supabase"
+import { toast } from "sonner"
 
 export default function ResetPasswordPage() {
   const { mutate: resetPassword, isPending } = useResetPassword()
@@ -51,11 +52,11 @@ export default function ResetPasswordPage() {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      return // You might want to show an error toast here
+      return toast.error("Password and confirm password do not match")
     }
 
     if (password.length < 6) {
-      return // You might want to show an error toast here
+      return toast.error("Password must be at least 6 characters long")
     }
 
     resetPassword(password, {

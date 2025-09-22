@@ -11,15 +11,14 @@ import { useSignupUser } from '@/app/services/hooks/useUser'
 import { useRouter } from 'next/navigation'
 
 export function SignupForm() {
-  const {mutate: signup} = useSignupUser()
+  const {mutate: signup, isPending} = useSignupUser()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const router = useRouter()
     e.preventDefault()
     if (!name.trim()) return toast.error('Please enter your name')
     signup({email, password, name},
@@ -98,8 +97,8 @@ export function SignupForm() {
               </div>
               <p className="text-xs text-muted-foreground">Password must be at least 6 characters long</p>
             </div>
-            <Button type="button" onClick={handleSubmit} className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+            <Button type="button" onClick={handleSubmit} className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isPending}>
+              {isPending ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
         </CardContent>

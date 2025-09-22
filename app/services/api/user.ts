@@ -25,9 +25,11 @@ export const signupUser = async (
 const { data: signupData, error: signupError } = await supabase.auth.signUp({
   email: data.email,
   password: data.password,
+  
   options: {
+    emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/login`,
     data: {
-      name: data.name,
+      full_name: data.name,
     }
   }
 })
@@ -54,7 +56,7 @@ export const createUserIfNotExists = async (user: { id: string; email: string; u
       {
         auth_id: user.id,
         email: user.email,
-        name: user.user_metadata?.name || user.email,
+        name: user.user_metadata?.full_name || "-",
       },
     ])
     .maybeSingle();
@@ -126,7 +128,7 @@ export const getAuthUser = async (): Promise<any | null> => {
 // Forgot password (send reset link)
 export const forgotPassword = async (email: string): Promise<{ message: string }> => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://check-print-pro.vercel.app/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
   })
 
   if (error) throw error
